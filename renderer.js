@@ -8,7 +8,14 @@ ipc.on('messageFromMain', (event, message) => {
 });
 
 openSecondWindowButton.addEventListener('click', (event) => {
-	let win = new BrowserWindow({width: 400, height: 275});
+	let win = new BrowserWindow({
+		webPreferences: {
+			nodeIntegration: true,
+			enableRemoteModule: true,
+		  },
+		  width: 400,
+		  height: 275
+		});
   	win.webContents.on('did-finish-load', () => {
 		win.webContents.send('message', 'This is a message from the renderer process to the second window.')
 	});
