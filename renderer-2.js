@@ -1,9 +1,9 @@
-ipc = require('electron').ipcRenderer;
-ipc.on('message', (event, message) => console.log(message));
+const {ipcRenderer} = require('electron');
+ipcRenderer.on('message', (event, message) => console.log(message));
 
 const sendMessageButton = document.getElementById('send-message');
 
 sendMessageButton.addEventListener('click', event => {
-	ipc.send('reply', `Send message from second window to renderer via main.`);
+	ipcRenderer.send('reply', `Hi! This is a message from the second window that is being sent via main`);
 	window.close();
 });

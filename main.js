@@ -1,9 +1,6 @@
-const electron = require('electron')
-const ipc = require('electron').ipcMain;
-// Module to control application life.
-const app = electron.app
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
+const {ipcMain} = require('electron');
+const {app} = require('electron');
+const {BrowserWindow} = require('electron');
 
 const path = require('path')
 const url = require('url')
@@ -12,17 +9,12 @@ const url = require('url')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-ipc.on('reply', (event, message) => {
-	console.log(event, message);
-	mainWindow.webContents.send('messageFromMain', `This is the message from the second window: ${message}`);
-})
-
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
-      enableRemoteModule: true,
+      contextIsolation: false,
     },
     width: 800,
     height: 600
@@ -69,6 +61,33 @@ app.on('activate', function () {
   }
 })
 
+ipcMain.handle('createSecondWindow', (event) => {
+  let win = new BrowserWindow({
+		webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+    width: 800,
+    height: 600
+  });
+	win.webContents.openDevTools();
+  win.on('close', () => {
+    win = null;
+  });
+
+  const windowId = win.loadURL(path.join('file://', process.cwd(), 'index-2.html')).then( () => {
+    return win.webContents.id;
+  })
+  win.show();
+
+  return windowId;
+})
+
+ipcMain.on('reply', (event, message) => {
+	console.log(`Forwarding message to second window: "${message}"`);
+	mainWindow.webContents.send('reply', message);
+})
+  
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
